@@ -24,9 +24,6 @@ app.post("/", (req, res, next) => {
     const start = moment(req.body.start, dateFormat);
     const end = moment(req.body.end, dateFormat);
     let endEpoch = moment(req.body.end, dateFormat).unix();
-    if (end.isDST()) {
-        endEpoch += 3600;
-    }
     // check for DND
     if (status.includes(dndToken)) {
         slack.dnd.setSnooze({
