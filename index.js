@@ -23,7 +23,10 @@ app.post("/", (req, res, next) => {
     const dateFormat = "MMM D, YYYY [at] hh:mmA";
     const start = moment(req.body.start, dateFormat);
     const end = moment(req.body.end, dateFormat);
-    const endEpoch = moment(req.body.end, dateFormat).unix();
+    let endEpoch = moment(req.body.end, dateFormat).unix();
+    if (end.isDST()) {
+        endEpoch += 3600;
+    }
     // check for DND
     if (status.includes(dndToken)) {
         slack.dnd.setSnooze({
@@ -33,15 +36,18 @@ app.post("/", (req, res, next) => {
         status = status.replace(dndToken, "");
     }
     // set status
+
+    const slackProfile = {
+        status_text: `${status} from ${start.format("h:mm")} to ${end.format(
+            "h:mm a"
+        )} ${process.env.TIME_ZONE}`,
+        status_emoji: ":spiral_calendar_pad:",
+        status_expiration: endEpoch
+    };
+    console.log(slackProfile);
     slack.users.profile.set({
         token: process.env.SLACK_TOKEN,
-        profile: JSON.stringify({
-            status_text: `${status} from ${start.format(
-                "h:mm"
-            )} to ${end.format("h:mm a")} ${process.env.TIME_ZONE}`,
-            status_emoji: ":spiral_calendar_pad:",
-            status_expiration: endEpoch
-        })
+        profile: JSON.stringify(slackProfile)
     });
     res.status(200);
     res.send("🤘");
