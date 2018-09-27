@@ -35,9 +35,9 @@ app.post("/", (req, res, next) => {
     // set status
 
     const slackProfile = {
-        status_text: `${status} from ${start.format("h:mm")} to ${end.format(
-            "h:mm a"
-        )} ${process.env.TIME_ZONE}`,
+        status_text: `${status} at ${start.format("h:mm")} ${
+            process.env.TIME_ZONE
+        }`,
         status_emoji: ":spiral_calendar_pad:",
         status_expiration: endEpoch
     };
