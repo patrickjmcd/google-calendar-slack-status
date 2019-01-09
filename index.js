@@ -13,6 +13,14 @@ app.use(bodyParser.json());
 
 const router = express.Router();
 
+// Body Format:
+// {
+//     "title": "<<<{{Title}}>>>",
+//     "start":"{{Starts}}",
+//     "end":"{{Ends}}",
+//     "token": "XXX"
+// }
+
 app.post("/", (req, res, next) => {
     // check for secret token
     if (!req.body.token || req.body.token !== process.env.SECRET_TOKEN) next();
@@ -23,6 +31,10 @@ app.post("/", (req, res, next) => {
     const dateFormat = "MMM D, YYYY [at] hh:mmA";
     const start = moment(req.body.start, dateFormat);
     const end = moment(req.body.end, dateFormat);
+    const eightHours = start.add(12, "hours");
+
+    if (end.isAfter(eightHours)) next(); // Don't include events longer than 12 hours. (all day events)
+
     let endEpoch = moment(req.body.end, dateFormat).unix();
     // check for DND
     if (status.includes(dndToken)) {
